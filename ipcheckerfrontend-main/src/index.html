@@ -1,315 +1,330 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>IPAddressChecker</title>
+    <title>IPAddressChecker</title>
 
-<script src="config.js"></script>
-<script type="text/javascript">
+    <script src="config.js"></script>
+    <script type="text/javascript">
 
-// import { serviceNames, urls } from '../config.js';
+        let healthyURLs = {...urls};
 
-let healthyURLs = { ...urls };
+        let unhealthyURLs = {}
 
-let unhealthyURLs = {
-}
+        //let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
+        //let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
 
-//let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
-//let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
-
-function displayResult(result, error = false)
-{
-    document.getElementById('output-text').value = result;
-    if (error) {
-        document.getElementById('output-text').style.color = 'red';
-        document.getElementById('output-text').style.outline = '2px solid red';
-    } else {
-        document.getElementById('output-text').style.color = 'black';
-        document.getElementById('output-text').style.outline = 'none';
-    }
-}
-
-function clearText()
-{
-    document.getElementById('input-text').value = '';
-    document.getElementById('output-text').value = '';
-}
-
-function sendRequest({ method = 'GET', service, query = '', xhttp}) {
-    const url = healthyURLs[service].urls[0];
-
-    xhttp.open(method, url + query);
-    xhttp.timeout = 20000;
-
-    xhttp.onerror = function() {
-        console.warn(`Connection to ${url} failed.`);
-        handleFailure(service, url, method, query, xhttp);
-    };
-
-    xhttp.ontimeout = function() {
-        console.warn(`Connection to ${url} timed out.`);
-        handleFailure(service, url, method, query, xhttp);
-    };
-
-    xhttp.send();
-}
-
-function handleFailure(service, url, method, query, xhttp) {
-    healthyURLs[service].urls = healthyURLs[service].urls.filter(u => u !== url);
-
-    if (!(service in unhealthyURLs)) {
-        unhealthyURLs[service] = [];
-    }
-    if (!unhealthyURLs[service].includes(url)) {
-        unhealthyURLs[service].push(url);
-    }
-
-    sendRequest({ method, service, query, xhttp});
-}
-
-function getTotalIPs()
-{
-  let items = document.getElementById('input-text').value
-
-  let xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          //let response = this.response
-          var j = JSON.parse(this.response);
-          console.log('test -- ' + j.total_ips);
-          let total_ips = j.total_ips;
-          displayResult('Total IP addresses = ' + total_ips);
-      }
-  };
-  sendRequest({service: serviceNames.IPCheckerTotalIPs, query: '?items=' + items, xhttp});
-  return;
-}
-
-function getTotalEmptyIPs()
-{
-  let items = document.getElementById('input-text').value
-
-  let xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          //let response = this.response
-          var j = JSON.parse(this.response);
-          console.log('test -- ' + j.total_empty_ips);
-          let total_empty_ips = j.total_empty_ips;
-          displayResult('Total empty IP addresses = ' + total_empty_ips);
-
-      }
-  };
-  sendRequest({service: serviceNames.IPCheckerTotalEmptyIPs, query: '?items=' + items, xhttp});
-  return;
-}
-
-function getIPType()
-{
-    let items = document.getElementById('input-text').value
-
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState !== 4) return;
-
-        let j;
-        try {
-            j = JSON.parse(this.responseText);
-        } catch (e) {
-            displayResult("Invalid server response", true);
-            return;
+        function displayResult(result, error = false) {
+            document.getElementById('output-text').value = result;
+            if (error) {
+                document.getElementById('output-text').style.color = 'red';
+                document.getElementById('output-text').style.outline = '2px solid red';
+            } else {
+                document.getElementById('output-text').style.color = 'black';
+                document.getElementById('output-text').style.outline = 'none';
+            }
         }
-        if (j.IPType.length !== items.split(",").length) {
-            displayResult("Error: Mismatch between provided and returned IP addresses.", true);
-            return;
+
+        function clearText() {
+            document.getElementById('input-text').value = '';
+            document.getElementById('output-text').value = '';
         }
-        switch (this.status) {
-            case 200:
-                displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify((j.IPType)))));
-                break;
-            default:
-                document.getElementById('output-text').value = 'Error occurred while fetching IP type.';
-        }
-    };
-    sendRequest({service: serviceNames.IPv4PrivateDetector, query: '?items=' + items, xhttp});
-    return;
-}
 
-function getExtractedIP()
-{
-    let items = document.getElementById('input-text').value
+        function sendRequest({method = 'GET', service, query = '', xhttp}) {
+            if (!healthyURLs[service] || healthyURLs[service].urls.length === 0) {
+                displayResult(`No healthy URLs remaining for service: ${service}`, true);
+                return;
+            }
 
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState !== 4) return;
+            const url = healthyURLs[service].urls[0];
 
-        let j;
-        try {
-            j = JSON.parse(this.responseText);
-        } catch (e) {
-            displayResult("Invalid server response", true);
-            return;
-        }
-        if (j.expandedIPs.length !== items.split(",").length) {
-            displayResult("Error: Mismatch between provided and returned IP addresses.", true);
-            return;
-        }
-        switch (this.status) {
-            case 200:
-                displayResult(ipStringCorrelator(items.split(","),JSON.parse(JSON.stringify(j.expandedIPs))));
-                break;
-            default:
-                document.getElementById('output-text').value = 'Error occurred while fetching expanded IPv6 addresses.';
-        }
-    };
-    sendRequest({service: serviceNames.IPv6Extractor, query: '?items=' + items, xhttp});
-    return;
-}
+            xhttp.open(method, url + query);
+            xhttp.timeout = 5000;
 
-function ipStringCorrelator(ips, answers){
-    let string = " ";
-    for (let i = 0; i < ips.length; i++) {
-        string += ips[i] + " => " + answers[i] + "\n";
-    }
-    return string;
-}
+            xhttp.onerror = function () {
+                console.warn(`Connection to ${url} failed.`);
+                handleFailure(service, url, method, query, xhttp, 'network_error');
+            };
 
-setInterval(checkUnhealthyURLs, 10000);
-
-function checkUnhealthyURLs() {
-    for (const service in unhealthyURLs) {
-        for (const url of unhealthyURLs[service]) {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open('HEAD', url+"?items=");
-            xhttp.timeout = 3000;
-
-            xhttp.onreadystatechange = function() {
-                if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
-                    console.log(`Service ${service} recovered URL: ${url}`);
-
-                    if (!healthyURLs[service]) healthyURLs[service] = { urls: [] };
-                    if (!healthyURLs[service].urls.includes(url)) {
-                        healthyURLs[service].urls.push(url);
-                    }
-
-                    unhealthyURLs[service] = unhealthyURLs[service].filter(u => u !== url);
-                }
+            xhttp.ontimeout = function () {
+                console.warn(`Connection to ${url} timed out.`);
+                handleFailure(service, url, method, query, xhttp, 'timeout');
             };
 
             xhttp.send();
         }
-    }
-}
 
-</script>
+        function handleFailure(service, url, method, query, xhttp, reason) {
+            healthyURLs[service].urls = healthyURLs[service].urls.filter(u => u !== url);
 
-<style type="text/css">
-body  {
-    font-size: 150%;
-    font-family: monospace;
-}
-label {
-    display: inline-block;
-    width: 150px;
-    text-align: left;
-}
-#logo
-{
-    font-family: Calibri, sans-serif;
-    font-weight: lighter;
-    font-size: 30px;
-    color: #505050;
-    margin: 0.5em;
-}
-#normal-text
-{
-    font-family: Calibri, sans-serif;
-    font-size: 20px;
-    margin: 0.5em;
-}
-#ipcheck
-{
-    text-align: center;
-    margin-top: 1em;
-}
-#input-div
-{
-    text-align: center;
-    margin-top: 1em;
-    background-color:#d5d8dc  ;
-}
-#output-div
-{
-    text-align: center;
-    background-color:#808b96 ;
-}
+            if (!(service in unhealthyURLs)) {
+                unhealthyURLs[service] = [];
+            }
+            if (!unhealthyURLs[service].includes(url)) {
+                unhealthyURLs[service].push(url);
+            }
 
-.input-items {
-      font-size: 90%;
-      color: black;
-      background-color:white ;
-      padding: 0.2em;
-      margin: 0.2em;
-      font-family: monospace;
-      letter-spacing: 0.1em;
-      width: 600px;
+            console.log(`Routing away from ${url} due to ${reason}.`);
 
-  }
+            if (healthyURLs[service].urls.length > 0) {
+                sendRequest({method, service, query, xhttp});
+            } else {
+                displayResult(`Service completely unavailable: ${service}`, true);
+            }
+        }
 
-.display-output {
-    font-size: 90%;
-    color: black;
-    background-color:white ;
-    padding: 0.2em;
-    margin: 0.2em;
-    font-family: monospace;
-    letter-spacing: 0.1em;
-    width: 600px;
+        function getTotalIPs() {
+            let items = document.getElementById('input-text').value
 
-}
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        var j = JSON.parse(this.response);
+                        displayResult('Total IP addresses = ' + j.total_ips);
+                    } else {
+                        try {
+                            let error = JSON.parse(this.responseText);
+                            displayResult(`Error (${this.status}): ${error.message || error.error}`, true);
+                        } catch (e) {
+                            displayResult(`Server Error (${this.status}) occurred fetching total IPs.`, true);
+                        }
+                    }
+                }
+            };
+            sendRequest({service: serviceNames.IPCheckerTotalIPs, query: '?items=' + items, xhttp});
+            return;
+        }
 
-.button-active {
-    background-color:   #2874a6  ;
-    color: white;
-    padding: 0px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 18px;
-    margin: 4px 2px;
-    cursor: pointer;
-    height: 50px;
-    width: 400px;
-}
+        function getTotalEmptyIPs() {
+            let items = document.getElementById('input-text').value
 
-.button-inactive {
-    background-color: gray;
-    color: white;
-    padding: 0px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 18px;
-    margin: 4px 2px;
-    cursor: pointer;
-    height: 50px;
-    width: 400px;
-}
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        var j = JSON.parse(this.response);
+                        displayResult('Total empty IP addresses = ' + j.total_empty_ips);
+                    } else {
+                        try {
+                            let error = JSON.parse(this.responseText);
+                            displayResult(`Error (${this.status}): ${error.message || error.error}`, true);
+                        } catch(e) {
+                            displayResult(`Server Error (${this.status}) occurred fetching empty IPs.`, true);
+                        }
+                    }
+                }
+            };
+            sendRequest({service: serviceNames.IPCheckerTotalEmptyIPs, query: '?items=' + items, xhttp});
+            return;
+        }
 
-.button-clear {
-    background-color:  #c0392b ;
-    color: white;
-    padding: 0px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 18px;
-    margin: 4px 2px;
-    cursor: pointer;
-    height: 40px;
-    width: 400px;
-}
+        function getIPType() {
+            let items = document.getElementById('input-text').value
 
-</style>
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState !== 4) return;
+
+                let j;
+                try {
+                    j = JSON.parse(this.responseText);
+                } catch (e) {
+                    displayResult("Invalid server response", true);
+                    return;
+                }
+                if (j.IPType.length !== items.split(",").length) {
+                    displayResult("Error: Mismatch between provided and returned IP addresses.", true);
+                    return;
+                }
+                switch (this.status) {
+                    case 200:
+                        displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify((j.IPType)))));
+                        break;
+                    default:
+                        document.getElementById('output-text').value = 'Error occurred while fetching IP type.';
+                }
+            };
+            sendRequest({service: serviceNames.IPv4PrivateDetector, query: '?items=' + items, xhttp});
+            return;
+        }
+
+        function getExtractedIP() {
+            let items = document.getElementById('input-text').value
+
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState !== 4) return;
+
+                let j;
+                try {
+                    j = JSON.parse(this.responseText);
+                } catch (e) {
+                    displayResult("Invalid server response", true);
+                    return;
+                }
+                if (j.expandedIPs.length !== items.split(",").length) {
+                    displayResult("Error: Mismatch between provided and returned IP addresses.", true);
+                    return;
+                }
+                switch (this.status) {
+                    case 200:
+                        displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify(j.expandedIPs))));
+                        break;
+                    default:
+                        document.getElementById('output-text').value = 'Error occurred while fetching expanded IPv6 addresses.';
+                }
+            };
+            sendRequest({service: serviceNames.IPv6Extractor, query: '?items=' + items, xhttp});
+            return;
+        }
+
+        function ipStringCorrelator(ips, answers) {
+            let string = " ";
+            for (let i = 0; i < ips.length; i++) {
+                string += ips[i] + " => " + answers[i] + "\n";
+            }
+            return string;
+        }
+
+        setInterval(checkUnhealthyURLs, 10000);
+
+        function checkUnhealthyURLs() {
+            for (const service in unhealthyURLs) {
+                for (const url of unhealthyURLs[service]) {
+                    const xhttp = new XMLHttpRequest();
+                    xhttp.open('HEAD', url + "?items=");
+                    xhttp.timeout = 3000;
+
+                    xhttp.onreadystatechange = function () {
+                        console.log(`Service ${service} checking URL: ${url}`);
+                        if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
+                            console.log(`Service ${service} recovered URL: ${url}`);
+
+                            if (!healthyURLs[service]) healthyURLs[service] = {urls: []};
+                            if (!healthyURLs[service].urls.includes(url)) {
+                                healthyURLs[service].urls.push(url);
+                            }
+
+                            unhealthyURLs[service] = unhealthyURLs[service].filter(u => u !== url);
+                        }
+                    };
+
+                    xhttp.send();
+                }
+            }
+        }
+
+    </script>
+
+    <style type="text/css">
+        body {
+            font-size: 150%;
+            font-family: monospace;
+        }
+
+        label {
+            display: inline-block;
+            width: 150px;
+            text-align: left;
+        }
+
+        #logo {
+            font-family: Calibri, sans-serif;
+            font-weight: lighter;
+            font-size: 30px;
+            color: #505050;
+            margin: 0.5em;
+        }
+
+        #normal-text {
+            font-family: Calibri, sans-serif;
+            font-size: 20px;
+            margin: 0.5em;
+        }
+
+        #ipcheck {
+            text-align: center;
+            margin-top: 1em;
+        }
+
+        #input-div {
+            text-align: center;
+            margin-top: 1em;
+            background-color: #d5d8dc;
+        }
+
+        #output-div {
+            text-align: center;
+            background-color: #808b96;
+        }
+
+        .input-items {
+            font-size: 90%;
+            color: black;
+            background-color: white;
+            padding: 0.2em;
+            margin: 0.2em;
+            font-family: monospace;
+            letter-spacing: 0.1em;
+            width: 600px;
+
+        }
+
+        .display-output {
+            font-size: 90%;
+            color: black;
+            background-color: white;
+            padding: 0.2em;
+            margin: 0.2em;
+            font-family: monospace;
+            letter-spacing: 0.1em;
+            width: 600px;
+
+        }
+
+        .button-active {
+            background-color: #2874a6;
+            color: white;
+            padding: 0px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 4px 2px;
+            cursor: pointer;
+            height: 50px;
+            width: 400px;
+        }
+
+        .button-inactive {
+            background-color: gray;
+            color: white;
+            padding: 0px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 4px 2px;
+            cursor: pointer;
+            height: 50px;
+            width: 400px;
+        }
+
+        .button-clear {
+            background-color: #c0392b;
+            color: white;
+            padding: 0px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 4px 2px;
+            cursor: pointer;
+            height: 40px;
+            width: 400px;
+        }
+
+    </style>
 
 </head>
 <body>
@@ -319,13 +334,15 @@ label {
     </div>
     <div id="input-div">
         <p id="normal-text">Paste your IP addresses here (separated by commas)..</p>
-        <textarea class="input-items" id="input-text" rows="5" cols="35" placeholder="Paste your IP addresses here.." value="">10.0.1.5, 192.168.1.10, 127.0.0.1, 8.8.8.8, 1.1.1.1, 2a00:1450:400e:811::200e, ::1, fe80::1, 2001:db8::8a2e:370:7334</textarea>
+        <textarea class="input-items" id="input-text" rows="5" cols="35" placeholder="Paste your IP addresses here.."
+                  value="">10.0.1.5, 192.168.1.10, 127.0.0.1, 8.8.8.8, 1.1.1.1, 2a00:1450:400e:811::200e, ::1, fe80::1, 2001:db8::8a2e:370:7334</textarea>
     </div>
     <div id="output-div">
-       <p id="normal-text">
-          Results
+        <p id="normal-text">
+            Results
         </p>
-        <textarea class="display-output" id="output-text" rows="5" cols="35" readonly=1 placeholder="Results here..." value="">
+        <textarea class="display-output" id="output-text" rows="5" cols="35" readonly=1 placeholder="Results here..."
+                  value="">
         </textarea>
     </div>
     <div>

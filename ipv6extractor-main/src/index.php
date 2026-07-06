@@ -15,11 +15,12 @@ if(empty($items)){
         "message" => "No IP addresses provided."
     ];
 }
-
+$ips = expandIPv6s($items);
+$error = in_array(true, array_column($ips, 1));
 $output = [
-    "error" => false,
+    "error" => $error,
     "items" => $items,
-    "expandedIPs" => expandIPv6s($items)
+    "expandedIPs" => array_column($ips, 0)
 ];
 
 echo json_encode($output);

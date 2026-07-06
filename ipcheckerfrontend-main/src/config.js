@@ -6,12 +6,12 @@ const serviceNames = {
 };
 
 const urls = {
-  [serviceNames.IPCheckerTotalEmptyIPs]: {
+  [serviceNames.IPCheckerTotalIPs]: {
     "urls": [
       "http://localhost:7000/", "http://localhost:7001/", "http://localhost:7002/"
     ]
   },
-  [serviceNames.IPCheckerTotalIPs]: {
+  [serviceNames.IPCheckerTotalEmptyIPs]: {
     "urls": ["http://localhost:9000/", "http://localhost:9001/", "http://localhost:9002/"]
   },
   [serviceNames.IPv4PrivateDetector]: {

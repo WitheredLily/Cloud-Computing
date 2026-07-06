@@ -20,10 +20,10 @@ function isIP($ip){
 
 function expandedIPv6($ip){
     if (!isIP($ip)) {
-        return invalidIP();
+        return [invalidIP(), true];
     }
     if (!isIPv6($ip)) {
-        return invalidIPv6();
+        return [invalidIPv6(), true];
     }
     $groups = explode(":", $ip);
     $expanded_ip = array();
@@ -39,7 +39,7 @@ function expandedIPv6($ip){
             $expanded_ip[] = str_repeat("0", 4 - strlen($group)).$group;
         }
     }
-    return implode(":", $expanded_ip);
+    return [implode(":", $expanded_ip), false];
 }
 
 function expandIPv6s($ips): array

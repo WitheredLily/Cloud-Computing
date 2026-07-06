@@ -15,11 +15,12 @@ if(empty($items)){
         "message" => "No IP addresses provided."
     ];
 }
-
+$ipClasses = classifyIPs($items);
+$error = in_array(true, array_column($ipClasses, 1));
 $output = [
-    "error" => false,
+    "error" => $error,
     "items" => $items,
-    "IPType" => classifyIPs($items)
+    "IPType" => array_column($ipClasses, 0)
 ];
 
 echo json_encode($output);

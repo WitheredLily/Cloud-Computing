@@ -22,31 +22,31 @@ function invalidIP(): string
 }
 
 class ip_type {
-    const Type_Private    = "Private";
-    const Type_Loopback    = "Loopback";
-    const Type_Public   = "Public";
+    const string Type_Private    = "Private";
+    const string Type_Loopback    = "Loopback";
+    const string Type_Public   = "Public";
 }
 
 function classifyIP($ip){
     if (!isIP($ip)) {
-        return invalidIP();
+        return [invalidIP(),true];
     }
     if (!isIPv4($ip)) {
-        return invalidIPv4();
+        return [invalidIPv4(),true];
     }
     $octets = explode(".", $ip);
     if (($octets[0] == 192 && $octets[1] == 168) || $octets[0] == 10) {
-        return ip_type::Type_Private;
+        return [ip_type::Type_Private, false];
     } else if ($octets[0] == 127) {
-        return ip_type::Type_Loopback;
+        return [ip_type::Type_Loopback, false];
     } else {
-        return ip_type::Type_Public;
+        return [ip_type::Type_Public, false];
     }
 }
 
 function classifyIPs($ips): array
 {
-    return array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips)));
+    return [array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips))), $error];
 }
 
 
