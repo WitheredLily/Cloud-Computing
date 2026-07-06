@@ -2,7 +2,7 @@ services:
   frontend:
     build: ./ipcheckerfrontend-main
     ports:
-      - "5000:80"
+      - "5000-5000:80"
     develop:
       watch:
         - action: sync+restart
@@ -12,7 +12,9 @@ services:
   empty-total-ips:
     build: ./ipcheckertotalemptyips-main
     ports:
-      - "9000:80"
+      - "9000-9002:80"
+    deploy:
+      replicas: 3
     develop:
       watch:
         - action: sync+restart
@@ -22,7 +24,9 @@ services:
   total-ips:
     build: ./ipcheckertotalips-main
     ports:
-      - "7000:80"
+      - "7000-7002:80"
+    deploy:
+      replicas: 3
     develop:
       watch:
         - action: sync+restart
@@ -31,7 +35,9 @@ services:
   ipv4-private-check:
     build: ./ipv4privatedetector-main
     ports:
-      - "8000:80"
+      - "8000-8002:80"
+    deploy:
+      replicas: 3
     develop:
       watch:
         - action: sync+restart
@@ -40,19 +46,14 @@ services:
   ipv6-extractor:
     build: ./ipv6extractor-main
     ports:
-      - "6500:80"
+      - "6500-6502:80"
+    deploy:
+      replicas: 3
     develop:
       watch:
         - action: sync+restart
           path: ./ipv6extractor-main/src
           target: /var/www/html/
-        - action: sync+restart
-          path: ./util/src
-          target: /var/www/html/
-  util:
-    build: ./util-main
-    develop:
-      watch:
         - action: sync+restart
           path: ./util/src
           target: /var/www/html/

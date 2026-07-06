@@ -42,6 +42,7 @@ function expandedIPv6($ip){
     return implode(":", $expanded_ip);
 }
 
-function expandIPv6s($ips){
+function expandIPv6s($ips): array
+{
     return array_map(__NAMESPACE__ . "\\expandedIPv6", explode(",", preg_replace('/\s+/', '', $ips)));
 }

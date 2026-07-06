@@ -1,19 +1,23 @@
 <?php
 namespace Ipv4PrivateDetector;
 
-function isIPv4($ip){
+function isIPv4($ip): bool
+{
     return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
 }
 
-function isIP($ip){
-    return filter_var($ip, FILTER_VALIDATE_IP);
+function isIP($ip): bool
+{
+    return filter_var($ip, FILTER_VALIDATE_IP) !== false;
 }
 
-function invalidIPv4(){
+function invalidIPv4(): string
+{
     return "The provided IP address is not an IPv4 address.";
 }
 
-function invalidIP(){
+function invalidIP(): string
+{
     return "Invalid IP address.";
 }
 
@@ -40,7 +44,8 @@ function classifyIP($ip){
     }
 }
 
-function classifyIPs($ips){
+function classifyIPs($ips): array
+{
     return array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips)));
 }
 

@@ -3,12 +3,15 @@
 <head>
 <title>IPAddressChecker</title>
 
+<script src="config.js"></script>
 <script type="text/javascript">
 
-let totalIPURL = "http://localhost:7000/";
-let totalEmptyIPURL = "http://localhost:9000/";
-let privateDetectorURL = "http://localhost:8000/";
-let ipv6ExtractorURL = "http://localhost:6500/";
+// import { serviceNames, urls } from '../config.js';
+
+let healthyURLs = { ...urls };
+
+let unhealthyURLs = {
+}
 
 //let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
 //let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
@@ -31,6 +34,38 @@ function clearText()
     document.getElementById('output-text').value = '';
 }
 
+function sendRequest({ method = 'GET', service, query = '', xhttp}) {
+    const url = healthyURLs[service].urls[0];
+
+    xhttp.open(method, url + query);
+    xhttp.timeout = 20000;
+
+    xhttp.onerror = function() {
+        console.warn(`Connection to ${url} failed.`);
+        handleFailure(service, url, method, query, xhttp);
+    };
+
+    xhttp.ontimeout = function() {
+        console.warn(`Connection to ${url} timed out.`);
+        handleFailure(service, url, method, query, xhttp);
+    };
+
+    xhttp.send();
+}
+
+function handleFailure(service, url, method, query, xhttp) {
+    healthyURLs[service].urls = healthyURLs[service].urls.filter(u => u !== url);
+
+    if (!(service in unhealthyURLs)) {
+        unhealthyURLs[service] = [];
+    }
+    if (!unhealthyURLs[service].includes(url)) {
+        unhealthyURLs[service].push(url);
+    }
+
+    sendRequest({ method, service, query, xhttp});
+}
+
 function getTotalIPs()
 {
   let items = document.getElementById('input-text').value
@@ -45,8 +80,7 @@ function getTotalIPs()
           displayResult('Total IP addresses = ' + total_ips);
       }
   };
-  xhttp.open("GET",totalIPURL+"?items=" + items);
-  xhttp.send();
+  sendRequest({service: serviceNames.IPCheckerTotalIPs, query: '?items=' + items, xhttp});
   return;
 }
 
@@ -65,8 +99,7 @@ function getTotalEmptyIPs()
 
       }
   };
-  xhttp.open("GET",totalEmptyIPURL+"?items=" + items);
-  xhttp.send();
+  sendRequest({service: serviceNames.IPCheckerTotalEmptyIPs, query: '?items=' + items, xhttp});
   return;
 }
 
@@ -97,8 +130,7 @@ function getIPType()
                 document.getElementById('output-text').value = 'Error occurred while fetching IP type.';
         }
     };
-    xhttp.open("GET",privateDetectorURL+"?items=" + items);
-    xhttp.send();
+    sendRequest({service: serviceNames.IPv4PrivateDetector, query: '?items=' + items, xhttp});
     return;
 }
 
@@ -129,8 +161,7 @@ function getExtractedIP()
                 document.getElementById('output-text').value = 'Error occurred while fetching expanded IPv6 addresses.';
         }
     };
-    xhttp.open("GET",ipv6ExtractorURL+"?items=" + items);
-    xhttp.send();
+    sendRequest({service: serviceNames.IPv6Extractor, query: '?items=' + items, xhttp});
     return;
 }
 
@@ -142,8 +173,32 @@ function ipStringCorrelator(ips, answers){
     return string;
 }
 
+setInterval(checkUnhealthyURLs, 10000);
 
+function checkUnhealthyURLs() {
+    for (const service in unhealthyURLs) {
+        for (const url of unhealthyURLs[service]) {
+            const xhttp = new XMLHttpRequest();
+            xhttp.open('HEAD', url+"?items=");
+            xhttp.timeout = 3000;
 
+            xhttp.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
+                    console.log(`Service ${service} recovered URL: ${url}`);
+
+                    if (!healthyURLs[service]) healthyURLs[service] = { urls: [] };
+                    if (!healthyURLs[service].urls.includes(url)) {
+                        healthyURLs[service].urls.push(url);
+                    }
+
+                    unhealthyURLs[service] = unhealthyURLs[service].filter(u => u !== url);
+                }
+            };
+
+            xhttp.send();
+        }
+    }
+}
 
 </script>
 
