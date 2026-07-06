@@ -1,0 +1,59 @@
+services:
+  frontend:
+    build: ./ipcheckerfrontend-main
+    ports:
+      - "5000:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ipcheckerfrontend-main/src
+          target: /var/www/html/
+
+  empty-total-ips:
+    build: ./ipcheckertotalemptyips-main
+    ports:
+      - "9000:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ipcheckertotalemptyips-main/src
+          target: /var/www/html/
+
+  total-ips:
+    build: ./ipcheckertotalips-main
+    ports:
+      - "7000:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ipcheckertotalips-main/src
+          target: /var/www/html/
+  ipv4-private-check:
+    build: ./ipv4privatedetector-main
+    ports:
+      - "8000:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ipv4privatedetector-main/src
+          target: /var/www/html/
+  ipv6-extractor:
+    build: ./ipv6extractor-main
+    ports:
+      - "6500:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ipv6extractor-main/src
+          target: /var/www/html/
+        - action: sync+restart
+          path: ./util/src
+          target: /var/www/html/
+  util:
+    build: ./util-main
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./util/src
+          target: /var/www/html/
+

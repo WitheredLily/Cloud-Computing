@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>IPAddressChecker</title>
+
+<script type="text/javascript">
+
+let totalIPURL = "http://localhost:7000/";
+let totalEmptyIPURL = "http://localhost:9000/";
+let privateDetectorURL = "http://localhost:8000/";
+let ipv6ExtractorURL = "http://localhost:6500/";
+
+//let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
+//let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
+
+function displayResult(result, error = false)
+{
+    document.getElementById('output-text').value = result;
+    if (error) {
+        document.getElementById('output-text').style.color = 'red';
+        document.getElementById('output-text').style.outline = '2px solid red';
+    } else {
+        document.getElementById('output-text').style.color = 'black';
+        document.getElementById('output-text').style.outline = 'none';
+    }
+}
+
+function clearText()
+{
+    document.getElementById('input-text').value = '';
+    document.getElementById('output-text').value = '';
+}
+
+function getTotalIPs()
+{
+  let items = document.getElementById('input-text').value
+
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          //let response = this.response
+          var j = JSON.parse(this.response);
+          console.log('test -- ' + j.total_ips);
+          let total_ips = j.total_ips;
+          displayResult('Total IP addresses = ' + total_ips);
+      }
+  };
+  xhttp.open("GET",totalIPURL+"?items=" + items);
+  xhttp.send();
+  return;
+}
+
+function getTotalEmptyIPs()
+{
+  let items = document.getElementById('input-text').value
+
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          //let response = this.response
+          var j = JSON.parse(this.response);
+          console.log('test -- ' + j.total_empty_ips);
+          let total_empty_ips = j.total_empty_ips;
+          displayResult('Total empty IP addresses = ' + total_empty_ips);
+
+      }
+  };
+  xhttp.open("GET",totalEmptyIPURL+"?items=" + items);
+  xhttp.send();
+  return;
+}
+
+function getIPType()
+{
+    let items = document.getElementById('input-text').value
+
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState !== 4) return;
+
+        let j;
+        try {
+            j = JSON.parse(this.responseText);
+        } catch (e) {
+            displayResult("Invalid server response", true);
+            return;
+        }
+        if (j.IPType.length !== items.split(",").length) {
+            displayResult("Error: Mismatch between provided and returned IP addresses.", true);
+            return;
+        }
+        switch (this.status) {
+            case 200:
+                displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify((j.IPType)))));
+                break;
+            default:
+                document.getElementById('output-text').value = 'Error occurred while fetching IP type.';
+        }
+    };
+    xhttp.open("GET",privateDetectorURL+"?items=" + items);
+    xhttp.send();
+    return;
+}
+
+function getExtractedIP()
+{
+    let items = document.getElementById('input-text').value
+
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState !== 4) return;
+
+        let j;
+        try {
+            j = JSON.parse(this.responseText);
+        } catch (e) {
+            displayResult("Invalid server response", true);
+            return;
+        }
+        if (j.expandedIPs.length !== items.split(",").length) {
+            displayResult("Error: Mismatch between provided and returned IP addresses.", true);
+            return;
+        }
+        switch (this.status) {
+            case 200:
+                displayResult(ipStringCorrelator(items.split(","),JSON.parse(JSON.stringify(j.expandedIPs))));
+                break;
+            default:
+                document.getElementById('output-text').value = 'Error occurred while fetching expanded IPv6 addresses.';
+        }
+    };
+    xhttp.open("GET",ipv6ExtractorURL+"?items=" + items);
+    xhttp.send();
+    return;
+}
+
+function ipStringCorrelator(ips, answers){
+    let string = " ";
+    for (let i = 0; i < ips.length; i++) {
+        string += ips[i] + " => " + answers[i] + "\n";
+    }
+    return string;
+}
+
+
+
+
+</script>
+
+<style type="text/css">
+body  {
+    font-size: 150%;
+    font-family: monospace;
+}
+label {
+    display: inline-block;
+    width: 150px;
+    text-align: left;
+}
+#logo
+{
+    font-family: Calibri, sans-serif;
+    font-weight: lighter;
+    font-size: 30px;
+    color: #505050;
+    margin: 0.5em;
+}
+#normal-text
+{
+    font-family: Calibri, sans-serif;
+    font-size: 20px;
+    margin: 0.5em;
+}
+#ipcheck
+{
+    text-align: center;
+    margin-top: 1em;
+}
+#input-div
+{
+    text-align: center;
+    margin-top: 1em;
+    background-color:#d5d8dc  ;
+}
+#output-div
+{
+    text-align: center;
+    background-color:#808b96 ;
+}
+
+.input-items {
+      font-size: 90%;
+      color: black;
+      background-color:white ;
+      padding: 0.2em;
+      margin: 0.2em;
+      font-family: monospace;
+      letter-spacing: 0.1em;
+      width: 600px;
+
+  }
+
+.display-output {
+    font-size: 90%;
+    color: black;
+    background-color:white ;
+    padding: 0.2em;
+    margin: 0.2em;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+    width: 600px;
+
+}
+
+.button-active {
+    background-color:   #2874a6  ;
+    color: white;
+    padding: 0px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    margin: 4px 2px;
+    cursor: pointer;
+    height: 50px;
+    width: 400px;
+}
+
+.button-inactive {
+    background-color: gray;
+    color: white;
+    padding: 0px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    margin: 4px 2px;
+    cursor: pointer;
+    height: 50px;
+    width: 400px;
+}
+
+.button-clear {
+    background-color:  #c0392b ;
+    color: white;
+    padding: 0px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    margin: 4px 2px;
+    cursor: pointer;
+    height: 40px;
+    width: 400px;
+}
+
+</style>
+
+</head>
+<body>
+<div id="ipcheck">
+    <div id="logo">
+        IP Address Checker
+    </div>
+    <div id="input-div">
+        <p id="normal-text">Paste your IP addresses here (separated by commas)..</p>
+        <textarea class="input-items" id="input-text" rows="5" cols="35" placeholder="Paste your IP addresses here.." value="">10.0.1.5, 192.168.1.10, 127.0.0.1, 8.8.8.8, 1.1.1.1, 2a00:1450:400e:811::200e, ::1, fe80::1, 2001:db8::8a2e:370:7334</textarea>
+    </div>
+    <div id="output-div">
+       <p id="normal-text">
+          Results
+        </p>
+        <textarea class="display-output" id="output-text" rows="5" cols="35" readonly=1 placeholder="Results here..." value="">
+        </textarea>
+    </div>
+    <div>
+        <button class="button-active" onclick="getTotalIPs();">Total IP addresses</button>
+    </div>
+    <div>
+        <button class="button-active" onclick="getTotalEmptyIPs();">Total empty IP addresses</button>
+    </div>
+    <div>
+        <button class="button-active" onclick="getIPType();">Detect private / reserved ranges</button>
+    </div>
+    <div>
+        <button class="button-active" onclick="getExtractedIP();">Extract IPv6</button>
+    </div>
+    <div>
+        <button class="button-clear" onclick="clearText();">Clear</button>
+    </div>
+
+</div>
+</body>
+
+<script type="text/javascript">
+</script>
+
+</html>
