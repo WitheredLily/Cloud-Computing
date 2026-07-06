@@ -1,1 +1,0 @@
-{"version":2,"defects":{"expandedIPv6Test::testExpandIPv6s":8,"privateDetectorTest::testExpandedIPv4":7,"privateDetectorTest::testExpandIPv4s":7},"times":{"expandedIPv6Test::testExpandedIPv6":0.001,"expandedIPv6Test::testExpandIPv6s":0.001,"privateDetectorTest::testExpandedIPv4":0.004,"privateDetectorTest::testExpandIPv4s":0.002}}

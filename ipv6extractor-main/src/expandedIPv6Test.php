@@ -7,31 +7,6 @@ use function Ipv6Extractor\expandIPv6s;
 use function Ipv6Extractor\invalidIP;
 use function Ipv6Extractor\invalidIPv6;
 
-
-use PHPUnit\Event\Test\Failed;
-use PHPUnit\Event\Test\FailedSubscriber;
-
-final class Ipv6FailureLogger implements FailedSubscriber
-{
-    public function notify(Failed $event): void
-    {
-        $test = $event->test();
-        $throwable = $event->throwable();
-
-        // Only target your specific test class/method
-        if ($test->className() !== expandedIPv6Test::class) {
-            return;
-        }
-
-        error_log("IPv6 test failed:");
-        error_log("Test: " . $test->name());
-        error_log("Message: " . $throwable->getMessage());
-
-        // optional: dump full exception trace
-        error_log($throwable->getTraceAsString());
-    }
-}
-
 final class expandedIPv6Test extends TestCase {
     public function ipDataProvider(){
         return [
@@ -53,7 +28,7 @@ final class expandedIPv6Test extends TestCase {
         foreach ($this->ipDataProvider() as $test) {
             $ip = $test[1];
             $expected = $test[2];
-            $this->assertSame($expected, expandedIPv6($ip));
+            $this->assertSame($expected, expandedIPv6($ip), $test[0]);
         }
     }
 
@@ -61,6 +36,6 @@ final class expandedIPv6Test extends TestCase {
         $ips = implode(',', array_column($this->ipDataProvider(), 1));
         $result = expandIPv6s($ips);
 
-        $this->assertSame(array_column($this->ipDataProvider(), 2), $result);
+        $this->assertSame(array_column($this->ipDataProvider(), 2), $result, "Failed to expand IPv6 addresses");
     }
 }

@@ -12,15 +12,17 @@ use PHPUnit\Framework\TestCase;
 final class privateDetectorTest extends TestCase {
     public function ipDataProvider(){
         return [
-            ['Private Ipv4', '192.168.1.1', ip_type::Type_Private],
-            ['Private Ipv4', '10.0.0.1', ip_type::Type_Private],
-            ['Public Ipv4', '192.168.1.2', ip_type::Type_Public],
-            ['Public Ipv4', '0.0.0.0', ip_type::Type_Public],
+            ['Private Ipv4 1', '192.168.1.1', ip_type::Type_Private],
+            ['Private Ipv4 2', '10.0.0.1', ip_type::Type_Private],
+            ['Public Ipv4 1', '192.168.1.2', ip_type::Type_Private],
+            ['Public Ipv4 2', '0.0.0.0', ip_type::Type_Public],
+            ['Public Ipv4 3', '8.8.8.8', ip_type::Type_Public],
+            ['Public Ipv4 4', '172.16.58.3', ip_type::Type_Public],
             ['Loopback Ipv4', '127.0.0.1', ip_type::Type_Loopback],
-            ['Invalid Ipv4', '192.168.1', invalidIPv4()],
-            ['Invalid Ipv4', '192.168.1.1.1', invalidIPv4()],
-            ['Invalid Ipv4', '-3.168.1.1.1', invalidIPv4()],
-            ['Invalid Ipv4', 'Non.sense.IP.Adress', invalidIP()],
+            ['Invalid Ipv4 1', '192.168.1', invalidIP()],
+            ['Invalid Ipv4 2', '192.168.1.1.1', invalidIP()],
+            ['Invalid Ipv4 3', '-3.168.1.1.1', invalidIP()],
+            ['Invalid Ipv4 4', 'Non.sense.IP.Adress', invalidIP()],
             ["Expanded IPv6", '2001:0db8:85a3:0000:0000:8a2e:0370:7334', invalidIPv4()],
             ["Compressed IPv6", '0001:db8:a3::8a2e:0:7334', invalidIPv4()],
             ["Compressed at start IPv6", '::85a3:0000:0000:8a2e:0370:7334', invalidIPv4()],
@@ -37,7 +39,7 @@ final class privateDetectorTest extends TestCase {
         foreach ($this->ipDataProvider() as $test) {
             $ip = $test[1];
             $expected = $test[2];
-            $this->assertSame($expected, classifyIP($ip));
+            $this->assertSame($expected, classifyIP($ip), $test[0]);
         }
     }
 
@@ -45,6 +47,6 @@ final class privateDetectorTest extends TestCase {
         $ips = implode(',', array_column($this->ipDataProvider(), 1));
         $result = classifyIPs($ips);
 
-        $this->assertSame(array_column($this->ipDataProvider(), 2), $result);
+        $this->assertSame(array_column($this->ipDataProvider(), 2), $result, "Failed to classify IPv4 addresses");
     }
 }
