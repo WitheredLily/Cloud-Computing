@@ -7,13 +7,15 @@ header("Content-Type: application/json");
 
 require 'functions.inc.php';
 
-$items = $_REQUEST['items'];
+$items = $_REQUEST['items'] ?? '';
 if(empty($items)){
     http_response_code(422);
     $output = [
         "error" => true,
         "message" => "No IP addresses provided."
     ];
+    echo json_encode($output);
+    exit();
 }
 $ipClasses = classifyIPs($items);
 $error = in_array(true, array_column($ipClasses, 1));

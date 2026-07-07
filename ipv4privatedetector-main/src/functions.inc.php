@@ -46,7 +46,7 @@ function classifyIP($ip){
 
 function classifyIPs($ips): array
 {
-    return [array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips))), $error];
+    return array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips)));
 }
 
 

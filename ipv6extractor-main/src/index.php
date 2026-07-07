@@ -6,7 +6,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
 require 'functions.inc.php';
-$items = $_REQUEST['items'];
+$items = $_REQUEST['items'] ?? '';
 
 if(empty($items)){
     http_response_code(422);
@@ -14,6 +14,8 @@ if(empty($items)){
         "error" => true,
         "message" => "No IP addresses provided."
     ];
+    echo json_encode($output);
+    exit();
 }
 $ips = expandIPv6s($items);
 $error = in_array(true, array_column($ips, 1));

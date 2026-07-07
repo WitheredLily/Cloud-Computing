@@ -3,6 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-type: application/json");
 require('functions.inc.php');
 
+$items = $_REQUEST['items'] ?? '';
 
 if(empty($items)){
     http_response_code(422);
@@ -10,9 +11,10 @@ if(empty($items)){
         "error" => true,
         "message" => "No IP addresses provided."
     ];
+    echo json_encode($output);
+    exit();
 }
 
-$items = $_REQUEST['items'];
 $total_ips=getTotalIPs($items);
 
 $output = array(

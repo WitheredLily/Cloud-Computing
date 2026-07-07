@@ -5,6 +5,8 @@
 
     <script src="config.js"></script>
     <script type="text/javascript">
+        let latestRequestId = 0;
+        let currentRequest = null;
 
         let healthyURLs = {...urls};
 
@@ -13,7 +15,7 @@
         //let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
         //let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
 
-        function displayResult(result, error = false) {
+        function displayResult(result, error = false, loaded = true) {
             document.getElementById('output-text').value = result;
             if (error) {
                 document.getElementById('output-text').style.color = 'red';
@@ -21,6 +23,10 @@
             } else {
                 document.getElementById('output-text').style.color = 'black';
                 document.getElementById('output-text').style.outline = 'none';
+            }
+            if (loaded) {
+                currentRequest = null;
+                setLoading(false);
             }
         }
 
@@ -30,15 +36,18 @@
         }
 
         function sendRequest({method = 'GET', service, query = '', xhttp}) {
+            const requestId = ++latestRequestId;
             if (!healthyURLs[service] || healthyURLs[service].urls.length === 0) {
                 displayResult(`No healthy URLs remaining for service: ${service}`, true);
                 return;
             }
+            setLoading(true);
 
             const url = healthyURLs[service].urls[0];
 
             xhttp.open(method, url + query);
             xhttp.timeout = 5000;
+            xhttp.requestId = requestId;
 
             xhttp.onerror = function () {
                 console.warn(`Connection to ${url} failed.`);
@@ -49,7 +58,11 @@
                 console.warn(`Connection to ${url} timed out.`);
                 handleFailure(service, url, method, query, xhttp, 'timeout');
             };
+            if (currentRequest) {
+                currentRequest.abort();
+            }
 
+            currentRequest = xhttp;
             xhttp.send();
         }
 
@@ -78,6 +91,7 @@
             let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4) {
+                    if (this.requestId !== latestRequestId) return;
                     if (this.status == 200) {
                         var j = JSON.parse(this.response);
                         displayResult('Total IP addresses = ' + j.total_ips);
@@ -92,7 +106,6 @@
                 }
             };
             sendRequest({service: serviceNames.IPCheckerTotalIPs, query: '?items=' + items, xhttp});
-            return;
         }
 
         function getTotalEmptyIPs() {
@@ -101,6 +114,7 @@
             let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4) {
+                    if (this.requestId !== latestRequestId) return;
                     if (this.status == 200) {
                         var j = JSON.parse(this.response);
                         displayResult('Total empty IP addresses = ' + j.total_empty_ips);
@@ -115,7 +129,6 @@
                 }
             };
             sendRequest({service: serviceNames.IPCheckerTotalEmptyIPs, query: '?items=' + items, xhttp});
-            return;
         }
 
         function getIPType() {
@@ -124,6 +137,7 @@
             let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState !== 4) return;
+                if (this.requestId !== latestRequestId) return;
 
                 let j;
                 try {
@@ -132,6 +146,7 @@
                     displayResult("Invalid server response", true);
                     return;
                 }
+                displayResult(JSON.stringify(this.responseText));
                 if (j.IPType.length !== items.split(",").length) {
                     displayResult("Error: Mismatch between provided and returned IP addresses.", true);
                     return;
@@ -154,6 +169,7 @@
             let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState !== 4) return;
+                if (this.requestId !== latestRequestId) return;
 
                 let j;
                 try {
@@ -211,6 +227,21 @@
 
                     xhttp.send();
                 }
+            }
+        }
+
+        function setLoading(loading) {
+            const buttons = document.querySelectorAll("button");
+
+            buttons.forEach(button => {
+                if (button.classList.contains("button-clear")) return;
+
+                button.disabled = loading;
+                button.className = loading ? "button-inactive" : "button-active";
+            });
+
+            if (loading) {
+                displayResult("Loading...", false, false);
             }
         }
 
