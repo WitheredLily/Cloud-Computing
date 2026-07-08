@@ -208,7 +208,7 @@
             for (const service in unhealthyURLs) {
                 for (const url of unhealthyURLs[service]) {
                     const xhttp = new XMLHttpRequest();
-                    xhttp.open('HEAD', url + "?items=");
+                    xhttp.open('HEAD', url + "?items=0.0.0.0");
                     xhttp.timeout = 3000;
 
                     xhttp.onreadystatechange = function () {

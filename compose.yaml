@@ -54,7 +54,14 @@ services:
         - action: sync+restart
           path: ./ipv6extractor-main/src
           target: /var/www/html/
+  ip-service-monitor:
+    build: ./ipchecker-monitor
+    ports:
+      - "5500:80"
+    develop:
+      watch:
         - action: sync+restart
-          path: ./util/src
+          path: ./ipv6extractor-main/src
           target: /var/www/html/
+
 
