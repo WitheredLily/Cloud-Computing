@@ -2,3 +2,4 @@
 vendor/
 .phpunit.result.cache
 ipchecker-monitor/node_modules
+.env

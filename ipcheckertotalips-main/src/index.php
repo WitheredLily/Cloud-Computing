@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Content-type: application/json");
-require('functions.inc.php');
+require_once('functions.inc.php');
 
 $items = $_REQUEST['items'] ?? '';
 

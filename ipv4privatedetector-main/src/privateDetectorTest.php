@@ -1,11 +1,10 @@
 <?php
 require_once 'functions.inc.php';
+require_once __DIR__ . '/../../utility/ip-functions.inc.php';
 
-use Ipv4PrivateDetector\ip_type;
-use function Ipv4PrivateDetector\classifyIP;
-use function Ipv4PrivateDetector\classifyIPs;
-use function Ipv4PrivateDetector\invalidIP;
-use function Ipv4PrivateDetector\invalidIPv4;
+use function IpFunctions\invalidIP;
+use function IpFunctions\invalidIPv4;
+use IpFunctions\ip_type;
 
 use PHPUnit\Framework\TestCase;
 

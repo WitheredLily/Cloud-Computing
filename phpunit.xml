@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
-        <testsuite name="All Projects">
+        <testsuite name="Unit">
             <directory suffix="Test.php">./ipcheckerfrontend-main</directory>
             <directory suffix="Test.php">./ipcheckertotalemptyips-main</directory>
             <directory suffix="Test.php">./ipcheckertotalips-main</directory>
             <directory suffix="Test.php">./ipv4privatedetector-main</directory>
             <directory suffix="Test.php">./ipv6extractor-main</directory>
+        </testsuite>
+
+        <testsuite name="Integration">
+            <directory suffix="Test.php">tests/integration</directory>
         </testsuite>
     </testsuites>
 </phpunit>

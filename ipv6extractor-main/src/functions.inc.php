@@ -1,22 +1,10 @@
 <?php
-namespace Ipv6Extractor;
 
-function invalidIPv6(){
-    return "The provided IP address is not an IPv6 address.";
-}
-
-function invalidIP(){
-    return "Invalid IP address.";
-}
-
-
-function isIPv6($ip){
-    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
-}
-
-function isIP($ip){
-    return filter_var($ip, FILTER_VALIDATE_IP);
-}
+require_once __DIR__ . '/../../utility/ip-functions.inc.php';
+use function IpFunctions\isIP;
+use function IpFunctions\isIPv6;
+use function IpFunctions\invalidIP;
+use function IpFunctions\invalidIPv6;
 
 function expandedIPv6($ip){
     if (!isIP($ip)) {

@@ -1,11 +1,10 @@
 <?php
 require_once 'functions.inc.php';
+require_once __DIR__ . '/../../utility/ip-functions.inc.php';
 
 use PHPUnit\Framework\TestCase;
-use function Ipv6Extractor\expandedIPv6;
-use function Ipv6Extractor\expandIPv6s;
-use function Ipv6Extractor\invalidIP;
-use function Ipv6Extractor\invalidIPv6;
+use function IpFunctions\invalidIP;
+use function IpFunctions\invalidIPv6;
 
 final class expandedIPv6Test extends TestCase {
     public function ipDataProvider(){

@@ -1,11 +1,10 @@
 <?php
 
-use function Ipv4PrivateDetector\classifyIPs;
-
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-require 'functions.inc.php';
+require_once 'functions.inc.php';
+require_once __DIR__ . '/../../utility/ip-functions.inc.php';
 
 $items = $_REQUEST['items'] ?? '';
 if(empty($items)){

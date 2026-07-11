@@ -3,14 +3,35 @@
 <head>
     <title>IPAddressChecker</title>
 
-    <script src="config.js"></script>
     <script type="text/javascript">
         let latestRequestId = 0;
         let currentRequest = null;
 
-        let healthyURLs = {...urls};
+        let healthyURLs = {};
+        let unhealthyURLs = {};
 
-        let unhealthyURLs = {}
+        let serviceNames = {};
+
+        async function loadConfig() {
+            const response = await fetch("../utility/config.json");
+            const config = await response.json();
+
+            serviceNames = config.serviceNames || {
+                IPCheckerTotalIPs: "ipcheckertotalips",
+                IPCheckerTotalEmptyIPs: "ipcheckertotalemptyips",
+                IPv4PrivateDetector: "ipv4privatedetector",
+                IPv6Extractor: "ipv6extractor"
+            };
+
+            healthyURLs = structuredClone(config.urls);
+            document.querySelectorAll("button").forEach(button => {
+                if (!button.classList.contains("button-clear")) {
+                    button.disabled = false;
+                }
+            });
+        }
+
+        loadConfig();
 
         //let totalIPURL = "http://ipcheckertotalips.esha.qpc.qubcloud.uk/";
         //let totalEmptyIPURL = "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/";
@@ -143,6 +164,7 @@
                 try {
                     j = JSON.parse(this.responseText);
                 } catch (e) {
+                    console.warn(`Connection to ${this.responseText} timed out.`);
                     displayResult("Invalid server response", true);
                     return;
                 }
@@ -377,19 +399,19 @@
         </textarea>
     </div>
     <div>
-        <button class="button-active" onclick="getTotalIPs();">Total IP addresses</button>
+        <button class="button-active" onclick="getTotalIPs();" disabled>Total IP addresses</button>
     </div>
     <div>
-        <button class="button-active" onclick="getTotalEmptyIPs();">Total empty IP addresses</button>
+        <button class="button-active" onclick="getTotalEmptyIPs();" disabled>Total empty IP addresses</button>
     </div>
     <div>
-        <button class="button-active" onclick="getIPType();">Detect private / reserved ranges</button>
+        <button class="button-active" onclick="getIPType();" disabled>Detect private / reserved ranges</button>
     </div>
     <div>
-        <button class="button-active" onclick="getExtractedIP();">Extract IPv6</button>
+        <button class="button-active" onclick="getExtractedIP();" disabled>Extract IPv6</button>
     </div>
     <div>
-        <button class="button-clear" onclick="clearText();">Clear</button>
+        <button class="button-clear" onclick="clearText();" disabled>Clear</button>
     </div>
 
 </div>

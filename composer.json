@@ -3,6 +3,9 @@
         "phpunit/phpunit": "^13.2"
     },
     "scripts": {
-        "test": "php .\\vendor\\bin\\phpunit"
+        "test": "php .\\vendor\\bin\\phpunit",
+        "unit-tests": "php .\\vendor\\bin\\phpunit --testsuite Unit",
+        "integration-tests": "php .\\vendor\\bin\\phpunit --testsuite Integration",
+        "test-suite": "powershell -ExecutionPolicy Bypass -File tests/integration/test-suite.ps1"
     }
 }
