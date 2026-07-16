@@ -9,7 +9,7 @@ services:
           path: ./ipcheckerfrontend-main/src
           target: /var/www/html/
     volumes:
-      - ./utility:/var/utility:ro
+      - ./utility:/var/www/html/utility:ro
 
   empty-total-ips:
     build: ./ipcheckertotalemptyips-main

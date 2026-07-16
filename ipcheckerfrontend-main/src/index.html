@@ -9,11 +9,12 @@
 
         let healthyURLs = {};
         let unhealthyURLs = {};
-
         let serviceNames = {};
 
+        let roundRobin = 0;
+
         async function loadConfig() {
-            const response = await fetch("../utility/config.json");
+            const response = await fetch("/utility/config.json");
             const config = await response.json();
 
             serviceNames = config.serviceNames || {
@@ -64,7 +65,7 @@
             }
             setLoading(true);
 
-            const url = healthyURLs[service].urls[0];
+            const url = roundRobinURL(service);
 
             xhttp.open(method, url + query);
             xhttp.timeout = 5000;
@@ -85,6 +86,17 @@
 
             currentRequest = xhttp;
             xhttp.send();
+        }
+
+        function roundRobinURL(service) {
+            if (!healthyURLs[service] || healthyURLs[service].urls.length === 0) {
+                return null;
+            }
+            const urls = healthyURLs[service].urls;
+            if (roundRobin >= urls.length){
+                roundRobin = roundRobin % urls.length;
+            }
+            return urls[roundRobin++];
         }
 
         function handleFailure(service, url, method, query, xhttp, reason) {
@@ -168,14 +180,18 @@
                     displayResult("Invalid server response", true);
                     return;
                 }
-                displayResult(JSON.stringify(this.responseText));
-                if (j.IPType.length !== items.split(",").length) {
+                let itemsArray = items.split(",");
+                if (j.IPType.length !== itemsArray.length) {
                     displayResult("Error: Mismatch between provided and returned IP addresses.", true);
                     return;
                 }
                 switch (this.status) {
                     case 200:
-                        displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify((j.IPType)))));
+                        displayResult(ipStringCorrelator({
+                            ips: itemsArray,
+                            answers: (j.IPType.map(function(value,index) { return value[0]; })),
+                            incorrect: (j.IPType.map(function(value,index) { return value[1]; }))
+                        }));
                         break;
                     default:
                         document.getElementById('output-text').value = 'Error occurred while fetching IP type.';
@@ -200,13 +216,21 @@
                     displayResult("Invalid server response", true);
                     return;
                 }
-                if (j.expandedIPs.length !== items.split(",").length) {
-                    displayResult("Error: Mismatch between provided and returned IP addresses.", true);
+                let itemsArray = items.split(",");
+                if (j.expandedIPs.length !== itemsArray.length) {
+                    displayResult(`Error: Mismatch between provided and returned IP addresses. Expected: ${itemsArray.length}. Received: ${j.expandedIPs.length}`, true);
                     return;
                 }
                 switch (this.status) {
                     case 200:
-                        displayResult(ipStringCorrelator(items.split(","), JSON.parse(JSON.stringify(j.expandedIPs))));
+                        displayResult(ipStringCorrelator({
+                            ips: itemsArray,
+                            answers: j.expandedIPs.map(function(value,index) { return value[0]; }),
+                            secondarySpacer: "      Change in Length: ",
+                            secondaryIp: j.expandedIPs.map(function(value,index) { return value[2]; }),
+                            secondaryAnswer: j.expandedIPs.map(function(value,index) { return value[3];}),
+                            incorrect: j.expandedIPs.map(function(value,index) { return value[1];})
+                        }));
                         break;
                     default:
                         document.getElementById('output-text').value = 'Error occurred while fetching expanded IPv6 addresses.';
@@ -216,10 +240,22 @@
             return;
         }
 
-        function ipStringCorrelator(ips, answers) {
-            let string = " ";
+        function ipStringCorrelator({ips, answers, spacer = " => ", secondarySpacer = " ", secondaryIp = null, secondaryAnswer = null, secondaryIgnoreValue = -1, incorrect=null}) {
+            let string = "";
             for (let i = 0; i < ips.length; i++) {
-                string += ips[i] + " => " + answers[i] + "\n";
+                let ip = ips[i];
+                if (incorrect !== null) {
+                    string += incorrect[i] ? "\u274C  " : "\u2713  ";
+                }
+                if (secondaryIp !== null && secondaryAnswer !== null) {
+                    if (secondaryIp[i] === secondaryIgnoreValue || secondaryAnswer[i] === secondaryIgnoreValue) {
+                        string += ip + spacer + answers[i] + "\n";
+                    } else{
+                        string += ip + spacer + answers[i] + secondarySpacer + secondaryIp[i] + spacer + secondaryAnswer[i] + "\n";
+                    }
+                } else {
+                    string += ip + spacer + answers[i] + "\n";
+                }
             }
             return string;
         }
@@ -394,9 +430,7 @@
         <p id="normal-text">
             Results
         </p>
-        <textarea class="display-output" id="output-text" rows="5" cols="35" readonly=1 placeholder="Results here..."
-                  value="">
-        </textarea>
+        <textarea class="display-output" id="output-text" rows="5" cols="35" readonly=1 placeholder="Results here..." value=""></textarea>
     </div>
     <div>
         <button class="button-active" onclick="getTotalIPs();" disabled>Total IP addresses</button>

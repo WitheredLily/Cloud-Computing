@@ -21,7 +21,7 @@ $error = in_array(true, array_column($ips, 1));
 $output = [
     "error" => $error,
     "items" => $items,
-    "expandedIPs" => array_column($ips, 0)
+    "expandedIPs" => $ips
 ];
 
 echo json_encode($output);

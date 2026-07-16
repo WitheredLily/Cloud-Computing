@@ -8,14 +8,15 @@ use function IpFunctions\invalidIPv6;
 
 function expandedIPv6($ip){
     if (!isIP($ip)) {
-        return [invalidIP(), true];
+        return [invalidIP(), true, -1, -1];
     }
     if (!isIPv6($ip)) {
-        return [invalidIPv6(), true];
+        return [invalidIPv6(), true, -1, -1];
     }
     $groups = explode(":", $ip);
+    $group_size = count($groups);
     $expanded_ip = array();
-    $double_size = 9 - (count($groups));
+    $double_size = 9 - ($group_size);
     $found_empty = false;
     foreach ($groups as $group) {
         if (strlen($group) == 0 && !$found_empty) {
@@ -27,7 +28,7 @@ function expandedIPv6($ip){
             $expanded_ip[] = str_repeat("0", 4 - strlen($group)).$group;
         }
     }
-    return [implode(":", $expanded_ip), false];
+    return [implode(":", $expanded_ip), false, $group_size, count($expanded_ip)];
 }
 
 function expandIPv6s($ips): array
