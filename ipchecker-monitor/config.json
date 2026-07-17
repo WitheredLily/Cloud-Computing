@@ -1,0 +1,24 @@
+{
+  "urls": {
+    "ipcheckertotalips": {
+      "urls": [
+        "http://total-ips:80/"
+      ]
+    },
+    "ipcheckertotalemptyips": {
+      "urls": [
+        "http://empty-total-ips:80/"
+      ]
+    },
+    "ipv4privatedetector": {
+      "urls": [
+        "http://ipv4-private-check:80/"
+      ]
+    },
+    "ipv6extractor": {
+      "urls": [
+        "http://ipv6-extractor:80/"
+      ]
+    }
+  }
+}

@@ -1,94 +1,43 @@
-const express=require("express");
-
-const cron=require("node-cron");
-
+const express = require("express");
+const cron = require("node-cron");
 
 const {
     createDatabase,
     getMetrics
-}=require("./database");
-
+} = require("./database");
 
 const {
     runMonitor
-}=require("./monitor");
+} = require("./monitor");
 
-
-
-const app=express();
-
+const app = express();
 
 createDatabase();
 
+app.use(express.static("public"));
 
 
-/*
-Run every minute
-*/
-cron.schedule(
-    "* * * * *",
-    ()=>{
-        console.log(
-            "Running monitor..."
-        );
-
-        runMonitor();
-    }
-);
+cron.schedule("* * * * *", () => {
+    console.log("Running monitor...");
+    runMonitor();
+});
 
 
+app.get("/api/metrics", (req, res) => {
+    res.json(getMetrics());
+});
 
-app.get(
-    "/",
-    (req,res)=>{
 
-        res.json({
-            service:
-                "IPChecker Monitoring Service"
-        });
+app.get("/api/run", async (req, res) => {
 
+    await runMonitor();
+
+    res.json({
+        status:"completed"
     });
+});
 
 
-
-app.get(
-    "/run",
-    async(req,res)=>{
-
-        await runMonitor();
-
-        res.json({
-            status:
-                "completed"
-        });
-
-    });
-
-
-
-app.get(
-    "/metrics",
-    (req,res)=>{
-
-
-        getMetrics(
-            (error,rows)=>{
-
-                res.json(rows);
-
-            }
-        );
-
-    });
-
-
-
-app.listen(
-    5500,
-    ()=>{
-
-        console.log(
-            "Monitor running on port 5500"
-        );
-
-    });
+app.listen(5500, () => {
+    console.log("Monitor running on port 5500");
+});

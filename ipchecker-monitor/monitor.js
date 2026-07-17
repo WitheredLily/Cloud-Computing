@@ -4,8 +4,7 @@ const {
     saveMetric
 } = require("./database");
 
-const { urls } = require("../utility/config.json");
-const { urls } = require("../utility/config.json");
+const { urls } = require("./config.json");
 
 const ip_type =  {
     Private  : "Private",
@@ -13,22 +12,11 @@ const ip_type =  {
     Public   : "Public"
 }
 
-function generateIPs(){
-
-    return [
-        "192.168.1.10",
-        "8.8.8.8",
-        "",
-        "127.0.0.1"
-    ].join(",");
-
-}
-
 function generateIPv4(classification){
     switch(classification){
         case ip_type.Private:
             let ip_start = [`10.${getRandomNumber(0, 255)}`,`192.168`]
-            return ip_start[Math.round(Math.random())]+`${getRandomNumber(0, 255)}.${getRandomNumber(0, 255)}`;
+            return ip_start[Math.round(Math.random())]+`.${getRandomNumber(0, 255)}.${getRandomNumber(0, 255)}`;
         case ip_type.Loopback:
             return `127.${getRandomNumber(0, 255)}.${getRandomNumber(0, 255)}.${getRandomNumber(0, 255)}`;
         case ip_type.Public:
@@ -50,7 +38,7 @@ function getRandomNumber(min, max, excluding = []) {
         .filter(x => x >= min && x < max)
         .sort((a, b) => a - b);
 
-    const count = max - min - excluding.length;
+    const count = max - min + 1 - excluding.length;
     if (count <= 0) {
         throw new Error("No valid numbers available.");
     }
@@ -72,11 +60,10 @@ function generateIPv6Segment(){
     let length = getRandomNumber(1, 4);
     let letters = "000000123456789ABCDEF";
     let number = ""
-    for (let i = 0; i < length; i++)
+    for (let i = 0; i < 4; i++)
         number += letters[(Math.floor(Math.random() * letters.length))];
     return number;
 }
-
 
 function generateIPv6(){
     let ipArray = [];
@@ -123,63 +110,116 @@ function compressIPv6Array(ipArray){
     return ipArray;
 }
 
+function getRandomIps(minAmount, maxAmount){
+    let ips = []
+    for(let i=0;i<getRandomNumber(minAmount, maxAmount);i++){
+        if (Math.random() > 0.5) {
+            ips.push(generateIPv4());
+        } else {
+            ips.push(generateIPv6()[0]);
+        }
+    }
+    return ips;
+}
 
+function getRandomIpsWithBlanks(minAmount, maxAmount){
+    let ips = []
+    let blankCount = 0
+    for(let i=0;i<getRandomNumber(minAmount, maxAmount);i++){
+        if (Math.random() < (1/3)) {
+            ips.push(generateIPv4());
+        } else if (Math.random() < (2/3)) {
+            ips.push(generateIPv6()[0]);
+        } else {
+            ips.push("");
+            blankCount++;
+        }
+    }
+    return [ips, blankCount];
+}
+
+function getRandomIpv4s(minAmount, maxAmount){
+    let ips = []
+    let ipClasses = []
+    for(let i=0;i<getRandomNumber(minAmount, maxAmount);i++){
+        if (Math.random() < (1/3)) {
+            ips.push(generateIPv4(ip_type.public));
+            ipClasses.push(ip_type.Public);
+        } else if (Math.random() < (2/3)) {
+            ips.push(generateIPv4(ip_type.Loopback));
+            ipClasses.push(ip_type.Loopback);
+        } else {
+            ips.push(generateIPv4(ip_type.Private));
+            ipClasses.push(ip_type.Private);
+        }
+    }
+    return [ips, ipClasses];
+}
+
+function getRandomIpv6s(minAmount, maxAmount){
+    let uncompressedIps = []
+    let compressedIps = []
+    for(let i=0;i<getRandomNumber(minAmount, maxAmount);i++){
+        let ip = generateIPv6();
+        uncompressedIps.push(ip[0]);
+        compressedIps.push(ip[1]);
+    }
+    return [compressedIps, uncompressedIps];
+}
 
 async function checkEndpoint(serviceName, url){
-
-    const ips = generateIPs();
+    let ips = []
+    let answers = []
+    let blankCount = 0
+    switch (serviceName) {
+        case "ipcheckertotalips":
+            ips = getRandomIps(1, 10);
+            break;
+        case "ipcheckertotalemptyips":
+            ips = getRandomIpsWithBlanks(1, 10);
+            [ips, blankCount] = getRandomIpsWithBlanks(1, 10);
+            break;
+        case "ipv4privatedetector":
+            [ips, answers] = getRandomIpv4s(1, 10);
+            break;
+        case "ipv6extractor":
+            [ips, answers] = getRandomIpv6s(1, 10);
+            break;
+        default:
+            console.warn("Unknown service:", serviceName);
+            break;
+    }
 
     const start = Date.now();
 
-
     try {
-
         const response = await axios.get(
             url,
             {
                 params:{
-                    items: ips
+                    items: ips.join(",")
                 },
                 timeout:5000
             }
         );
 
-
         const responseTime = Date.now() - start;
-
-
         let correct = false;
 
-
         switch(serviceName){
-
-
             case "ipcheckertotalips":
-
-                correct =
-                    response.data.total_ips === ips.split(",").length;
-
+                correct = response.data.total_ips === ips.length;
                 break;
-
-
-
             case "ipcheckertotalemptyips":
-
-                correct =
-                    response.data.total_empty_ips === 1;
-
+                correct = response.data.total_empty_ips === blankCount;
                 break;
-
-
-
-            default:
-
-                correct = true;
-
+            case "ipv4privatedetector":
+                correct = JSON.stringify(answers) === JSON.stringify(response.data.IPType.map(function(value,index) { return value[0]; }));
+                break;
+            case "ipv6extractor":
+                correct = JSON.stringify(answers) === JSON.stringify(response.data.expandedIPs.map(function(value,index) { return value[0]; }));
+                break;
         }
-
-
-
         saveMetric(
             serviceName,
             correct ? 1 : 0,
@@ -187,79 +227,57 @@ async function checkEndpoint(serviceName, url){
             correct ? "OK" : "Incorrect response"
         );
 
-
         if(!correct){
-
-            console.log(
+            console.warn(
                 "ALERT:",
                 serviceName,
-                "returned incorrect result"
+                "returned incorrect result" ,
+                "Expected: ", answers,
+                "Received: ", response.data
             );
-
+        } else {
+            console.log(
+                serviceName,
+                "returned correct result"
+            );
         }
-
-
     }
     catch(error){
-
-
         const responseTime = Date.now() - start;
-
+        const message = error.response
+            ? `${error.response.status} ${error.response.statusText}`
+            : error.message;
 
         saveMetric(
             serviceName,
             0,
             responseTime,
-            error.message
+            message
         );
-
-
-        console.log(
+        console.warn(
             "ALERT:",
             serviceName,
             "failed:",
-            error.message
+            message
         );
-
     }
-
 }
-
-
-
-
 
 async function checkService(serviceName, serviceConfig){
-
-
-    for(const url of serviceConfig.urls){
-
-        await checkEndpoint(
-            serviceName,
-            url
-        );
-
-    }
-
+    await Promise.all(
+        serviceConfig.urls.map(url =>
+            checkEndpoint(serviceName, url)
+        )
+    );
 }
-
-
 
 async function runMonitor(){
-
-
-    for(const service in urls){
-
-        await checkService(
-            service,
-            urls[service]
-        );
-
-    }
-
+    await Promise.all(
+        Object.entries(urls).map(([service, config]) =>
+            checkService(service, config)
+        )
+    );
 }
-
-
 
 module.exports = {
     runMonitor

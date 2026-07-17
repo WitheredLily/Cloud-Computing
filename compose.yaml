@@ -66,11 +66,11 @@ services:
   ip-service-monitor:
     build: ./ipchecker-monitor
     ports:
-      - "5500:80"
+      - "5500:5500"
     develop:
       watch:
         - action: sync+restart
-          path: ./ipchecker-monitor/src
-          target: /var/www/html/
-    volumes:
-      - ./utility:/var/utility:ro
+          path: ./ipchecker-monitor
+          target: /app
+          ignore:
+            - node_modules/
