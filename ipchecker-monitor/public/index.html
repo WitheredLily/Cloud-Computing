@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Monitoring Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.1.0/tablesort.min.js"></script>
+
+</head>
+
+
+<body>
+
+<h1>IPChecker Monitoring Dashboard</h1>
+
+
+<button onclick="runMonitor()">
+    Run Monitor Now
+</button>
+
+<label for="quantity">Amount to show</label>
+<input type="number" id="quantity" name="quantity" min="1" max="1000000" value="100">
+
+<label for="firstDate">Between</label>
+<label for="lastDate">-</label>
+<input type="datetime-local" id="firstDate" name="date">-<input type="datetime-local" id="lastDate" name="date">
+
+<label for="statusChoice">Status</label>
+<select name="statusChoice" id="statusChoice">
+    <option selected value> -- select an option -- </option>
+    <option value=1>SUCCESS</option>
+    <option value=0>FAILURE</option>
+</select>
+
+<label for="idRange1">Id Range</label>
+<input type="number" id="idRange1" name="idRange1" min="1">-<input type="number" id="idRange2" name="idRange2" min="1">
+
+<span class="toggle-container">
+    <label for="toggleVendors" class="label-toggle form-control">Service</label>
+    <input type="checkbox" id="toggleVendors" class="hidden-checkbox">
+    <div class="toggle-content">
+        <ul>
+            <li><input type="checkbox" id="ipv6extractor" />ipv6extractor</li>
+            <li><input type="checkbox" id="ipv4privatedetector" />ipv4privatedetector</li>
+            <li><input type="checkbox" id="ipcheckertotalemptyips" />ipcheckertotalemptyips</li>
+            <li><input type="checkbox" id="ipcheckertotalips" />ipcheckertotalips</li>
+        </ul>
+    </div>
+</span>
+
+<button onclick="loadMetrics()">Update Metrics</button>
+
+
+<h2>Recent Metrics</h2>
+
+
+<table id="my-table">
+
+    <thead>
+
+    <tr data-sort-method="none">
+        <th>ID</th>
+        <th>Service</th>
+        <th>Status</th>
+        <th>Response Time</th>
+        <th>Message</th>
+        <th>Time</th>
+    </tr>
+
+    </thead>
+
+
+    <tbody id="metrics">
+
+    </tbody>
+
+
+</table>
+
+
+<script src="app.js"></script>
+
+</body>
+
+</html>

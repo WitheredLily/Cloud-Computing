@@ -24,7 +24,19 @@ cron.schedule("* * * * *", () => {
 
 
 app.get("/api/metrics", (req, res) => {
-    res.json(getMetrics());
+    const filters = {
+        amount: req.query.amount ? parseInt(req.query.amount, 10) : undefined,
+        firstDate: req.query.firstDate,
+        lastDate: req.query.lastDate,
+        success: req.query.success,
+        idMin: req.query.idMin ? parseInt(req.query.idMin, 10) : undefined,
+        idMax: req.query.idMax ? parseInt(req.query.idMax, 10) : undefined,
+        services: req.query.services
+            ? req.query.services.split(",")
+            : []
+    };
+
+    res.json(getMetrics(filters));
 });
 
 

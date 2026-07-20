@@ -20,5 +20,12 @@
         "http://ipv6-extractor:80/"
       ]
     }
+  },
+  "alerts": {
+    "email": {
+      "recipients": [
+        "40334383@ads.qub.ac.uk"
+      ]
+    }
   }
 }

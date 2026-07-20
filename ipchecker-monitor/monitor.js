@@ -12,6 +12,10 @@ const ip_type =  {
     Public   : "Public"
 }
 
+const counters = Object.fromEntries(
+    Object.keys(urls).map(service => [service, 0])
+);
+
 function generateIPv4(classification){
     switch(classification){
         case ip_type.Private:
@@ -131,8 +135,16 @@ function getRandomIpsWithBlanks(minAmount, maxAmount){
         } else if (Math.random() < (2/3)) {
             ips.push(generateIPv6()[0]);
         } else {
-            ips.push("");
-            blankCount++;
+            if (i === 0){
+                if (Math.random() < 0.5) {
+                    ips.push(generateIPv4());
+                } else {
+                    ips.push(generateIPv6()[0]);
+                }
+            } else {
+                ips.push("");
+                blankCount++;
+            }
         }
     }
     return [ips, blankCount];
@@ -228,6 +240,7 @@ async function checkEndpoint(serviceName, url){
         );
 
         if(!correct){
+            counters[serviceName]++;
             console.warn(
                 "ALERT:",
                 serviceName,
@@ -236,6 +249,7 @@ async function checkEndpoint(serviceName, url){
                 "Received: ", response.data
             );
         } else {
+            counters[serviceName] = 0;
             console.log(
                 serviceName,
                 "returned correct result"
@@ -254,6 +268,7 @@ async function checkEndpoint(serviceName, url){
             responseTime,
             message
         );
+        counters[serviceName]++;
         console.warn(
             "ALERT:",
             serviceName,
