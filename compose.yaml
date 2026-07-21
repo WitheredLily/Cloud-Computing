@@ -67,6 +67,8 @@ services:
     build: ./ipchecker-monitor
     ports:
       - "5500:5500"
+    volumes:
+      - monitor-db:/app/data
     develop:
       watch:
         - action: sync+restart
@@ -74,3 +76,5 @@ services:
           target: /app
           ignore:
             - node_modules/
+volumes:
+  monitor-db:

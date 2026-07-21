@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/ipcheckertotalips-main" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/ipv4privatedetector-main" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/ipv6extractor-main" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/integration" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/myclabs/deep-copy" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/nikic/php-parser" />

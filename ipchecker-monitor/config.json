@@ -24,8 +24,17 @@
   "alerts": {
     "email": {
       "recipients": [
-        "40334383@ads.qub.ac.uk"
+        "ted.qub@gmail.com"
       ]
-    }
+    },
+    "enabled": true,
+    "minTriggers": 6,
+    "minTriggerBetweenAlerts": 50,
+    "minTimeBetweenAlerts": 300000,
+    "recoveryTime": 120000,
+    "recoveryCountReq": 6
+  },
+  "monitoring": {
+    "schedule": "*/1 * * * *"
   }
 }

@@ -1,20 +1,17 @@
 const axios = require("axios");
 
 const {
-    saveMetric
+    saveMetric, createAlert
 } = require("./database");
 
 const { urls } = require("./config.json");
+const { alertCheck } = require("./alert");
 
 const ip_type =  {
     Private  : "Private",
     Loopback : "Loopback",
     Public   : "Public"
 }
-
-const counters = Object.fromEntries(
-    Object.keys(urls).map(service => [service, 0])
-);
 
 function generateIPv4(classification){
     switch(classification){
@@ -232,15 +229,8 @@ async function checkEndpoint(serviceName, url){
                 correct = JSON.stringify(answers) === JSON.stringify(response.data.expandedIPs.map(function(value,index) { return value[0]; }));
                 break;
         }
-        saveMetric(
-            serviceName,
-            correct ? 1 : 0,
-            responseTime,
-            correct ? "OK" : "Incorrect response"
-        );
-
         if(!correct){
-            counters[serviceName]++;
+            alertCheck(serviceName, true, "Incorrect response")
             console.warn(
                 "ALERT:",
                 serviceName,
@@ -249,14 +239,21 @@ async function checkEndpoint(serviceName, url){
                 "Received: ", response.data
             );
         } else {
-            counters[serviceName] = 0;
+            alertCheck(serviceName);
             console.log(
                 serviceName,
                 "returned correct result"
             );
         }
+        saveMetric(
+            serviceName,
+            correct ? 1 : 0,
+            responseTime,
+            correct ? "OK" : "Incorrect response"
+        );
     }
     catch(error){
+        console.error(error.stack);
         const responseTime = Date.now() - start;
         const message = error.response
             ? `${error.response.status} ${error.response.statusText}`
@@ -268,7 +265,7 @@ async function checkEndpoint(serviceName, url){
             responseTime,
             message
         );
-        counters[serviceName]++;
+        alertCheck(serviceName, true, message);
         console.warn(
             "ALERT:",
             serviceName,
