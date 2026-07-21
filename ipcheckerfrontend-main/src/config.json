@@ -8,16 +8,12 @@
   "urls": {
     "ipcheckertotalips": {
       "urls": [
-        "http://localhost:7000/",
-        "http://localhost:7001/",
-        "http://localhost:7002/"
+        "http://ipcheckertotalips.esha.qpc.qubcloud.uk/"
       ]
     },
     "ipcheckertotalemptyips": {
       "urls": [
-        "http://localhost:9000/",
-        "http://localhost:9001/",
-        "http://localhost:9002/"
+        "http://ipcheckertotalemptyips.esha.qpc.qubcloud.uk/"
       ]
     },
     "ipv4privatedetector": {

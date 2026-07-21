@@ -15,8 +15,6 @@ services:
     build: ./ipcheckertotalemptyips-main
     ports:
       - "9000-9002:80"
-    deploy:
-      replicas: 3
     develop:
       watch:
         - action: sync+restart
@@ -27,8 +25,6 @@ services:
     build: ./ipcheckertotalips-main
     ports:
       - "7000-7002:80"
-    deploy:
-      replicas: 3
     develop:
       watch:
         - action: sync+restart

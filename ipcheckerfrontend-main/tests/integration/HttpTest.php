@@ -1,13 +1,13 @@
 <?php
 
-require_once __DIR__ . '/../../utility/ip-functions.inc.php';
+require_once __DIR__ . '/ip-functions.inc.php';
 
 use PHPUnit\Framework\TestCase;
-use function IpFunctions\invalidIP;
-use function IpFunctions\invalidIPv6;
-use function IpFunctions\invalidIPv4;
-use IpFunctions\ip_type;
-use function IpFunctions\loadUrls;
+use function IpFunction\invalidIP;
+use function IpFunction\invalidIPv6;
+use function IpFunction\invalidIPv4;
+use IpFunction\ip_type;
+use function IpFunction\loadUrls;
 
 final class HttpTest  extends TestCase
 {
@@ -106,3 +106,5 @@ final class HttpTest  extends TestCase
         }
     }
 }
+
+

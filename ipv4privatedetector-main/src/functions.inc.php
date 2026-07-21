@@ -1,11 +1,4 @@
 <?php
-require_once __DIR__ . '/../../utility/ip-functions.inc.php';
-
-use function IpFunctions\isIP;
-use function IpFunctions\isIPv4;
-use function IpFunctions\invalidIP;
-use function IpFunctions\invalidIPv4;
-use IpFunctions\ip_type;
 
 function classifyIP($ip){
     if (!isIP($ip)) {
@@ -28,5 +21,32 @@ function classifyIPs($ips): array
 {
     return array_map(__NAMESPACE__ . "\\classifyIP", explode(",", preg_replace('/\s+/', '', $ips)));
 }
+
+function isIPv4($ip): bool
+{
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
+}
+
+function isIP($ip): bool
+{
+    return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+}
+
+function invalidIPv4(): string
+{
+    return "The provided IP address is not an IPv4 address.";
+}
+
+function invalidIP(): string
+{
+    return "Invalid IP address.";
+}
+
+class ip_type {
+    const string Type_Private    = "Private";
+    const string Type_Loopback    = "Loopback";
+    const string Type_Public   = "Public";
+}
+
 
 

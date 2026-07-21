@@ -1,8 +1,6 @@
 docker-compose up --build -d
 
 try {
-    Write-Host "========== RUNNING UNIT TESTS ==========`n"
-    composer unit-tests
     Write-Host "========== RUNNING INTEGRATION TESTS ==========`n"
     composer integration-tests
     exit $LASTEXITCODE

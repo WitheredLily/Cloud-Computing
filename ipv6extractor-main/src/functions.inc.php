@@ -1,11 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../../utility/ip-functions.inc.php';
-use function IpFunctions\isIP;
-use function IpFunctions\isIPv6;
-use function IpFunctions\invalidIP;
-use function IpFunctions\invalidIPv6;
-
 function expandedIPv6($ip){
     if (!isIP($ip)) {
         return [invalidIP(), true, -1, -1];
@@ -34,4 +28,30 @@ function expandedIPv6($ip){
 function expandIPv6s($ips): array
 {
     return array_map(__NAMESPACE__ . "\\expandedIPv6", explode(",", preg_replace('/\s+/', '', $ips)));
+}
+
+function isIPv6($ip): bool
+{
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
+}
+
+function isIP($ip): bool
+{
+    return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+}
+
+function invalidIPv6(): string
+{
+    return "The provided IP address is not an IPv6 address.";
+}
+
+function invalidIP(): string
+{
+    return "Invalid IP address.";
+}
+
+class ip_type {
+    const string Type_Private    = "Private";
+    const string Type_Loopback    = "Loopback";
+    const string Type_Public   = "Public";
 }

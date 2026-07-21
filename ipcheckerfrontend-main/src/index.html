@@ -14,7 +14,7 @@
         let roundRobin = 0;
 
         async function loadConfig() {
-            const response = await fetch("/utility/config.json");
+            const response = await fetch("/config.json");
             const config = await response.json();
 
             serviceNames = config.serviceNames || {

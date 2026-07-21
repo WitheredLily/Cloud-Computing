@@ -1,0 +1,7 @@
+.idea/
+vendor/
+.phpunit.result.cache
+ipchecker-monitor/node_modules
+.env
+ipchecker-monitor/metrics.db
+identifier.sqlite

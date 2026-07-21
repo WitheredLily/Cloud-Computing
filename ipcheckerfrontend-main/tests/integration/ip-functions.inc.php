@@ -1,5 +1,5 @@
 <?php
-namespace IpFunctions;
+namespace IpFunction;
 
 use RuntimeException;
 
@@ -41,7 +41,7 @@ class ip_type {
 
 function loadUrls(): array
 {
-    $file = __DIR__ . '/config.json';
+    $file = __DIR__ . '../src/config.json';
 
     if (!file_exists($file)) {
         throw new RuntimeException("config.json not found: $file");

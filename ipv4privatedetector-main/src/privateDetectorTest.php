@@ -1,15 +1,11 @@
 <?php
 require_once 'functions.inc.php';
-require_once __DIR__ . '/../../utility/ip-functions.inc.php';
-
-use function IpFunctions\invalidIP;
-use function IpFunctions\invalidIPv4;
-use IpFunctions\ip_type;
 
 use PHPUnit\Framework\TestCase;
 
 final class privateDetectorTest extends TestCase {
-    public function ipDataProvider(){
+    public function ipDataProvider(): array
+    {
         return [
             ['Private Ipv4 1', '192.168.1.1', ip_type::Type_Private, false],
             ['Private Ipv4 2', '10.0.0.1', ip_type::Type_Private, false],

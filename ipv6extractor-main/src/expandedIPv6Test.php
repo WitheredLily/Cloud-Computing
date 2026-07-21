@@ -1,13 +1,11 @@
 <?php
 require_once 'functions.inc.php';
-require_once __DIR__ . '/../../utility/ip-functions.inc.php';
 
 use PHPUnit\Framework\TestCase;
-use function IpFunctions\invalidIP;
-use function IpFunctions\invalidIPv6;
 
 final class expandedIPv6Test extends TestCase {
-    public function ipDataProvider(){
+    public function ipDataProvider(): array
+    {
         return [
             ["Expanded IPv6", '2001:0db8:85a3:0000:0000:8a2e:0370:7334', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', false],
             ["Compressed IPv6", '0001:db8:a3::8a2e:0:7334', '0001:0db8:00a3:0000:0000:8a2e:0000:7334', false],
